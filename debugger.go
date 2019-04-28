@@ -5,37 +5,37 @@ import (
 	"sync"
 )
 
-var breakpoints map[string]*BreakPoint
+var breakpoints map[string]*Label
 var wg sync.Mutex
 
 func init() {
-	breakpoints = make(map[string]*BreakPoint)
+	breakpoints = make(map[string]*Label)
 }
 
-type BreakPoint struct {
+type Label struct {
 	c chan struct{}
 }
 
-func Bind(name string) *BreakPoint {
-	return getBreakPoint(name)
+func Bind(name string) *Label {
+	return getLabel(name)
 }
 
-func Break(b *BreakPoint) {
+func Breakpoint(b *Label) {
 	<-b.c
 }
 
 func Continue(name string) {
-	b := getBreakPoint(name)
+	b := getLabel(name)
 	b.c <- struct{}{}
 }
 
-func getBreakPoint(name string) *BreakPoint {
+func getLabel(name string) *Label {
 	var ok bool
-	var b *BreakPoint
+	var b *Label
 	wg.Lock()
 	b, ok = breakpoints[name]
 	if !ok {
-		b = &BreakPoint{
+		b = &Label{
 			c: make(chan struct{}),
 		}
 		breakpoints[name] = b
